@@ -32,10 +32,10 @@
         dropdown.innerHTML = '';
 
         // Add names from the array to the dropdown
-        namesArray.forEach((name) => {
+        namesArray.forEach((name, index) => {
             const option = document.createElement('option');
             option.value = name;
-            option.text = name;
+            option.text = `${index + 1}. ${name}`;
             dropdown.add(option);
         });
         }
@@ -52,10 +52,11 @@
             audioBlobs = []; // Clear previous audio blobs
             const inputText = document.getElementById('inputText').value;
             paragraphs = inputText.split(/\n\s*\n/).map(paragraph => paragraph.trim());
-            const speakerId = encodeURIComponent(document.getElementById('speaker_id').value);
-            const languageId = "en";
+            let speakerId = document.getElementById('speaker_id').value;
+            let languageId = "en";
             
             document.getElementById("demoTitle").innerHTML = "There are " + paragraphs.length + " paragraphs";
+            document.title = "TTS Demo, Len:" + paragraphs.length;
 
             // Clear previous output
             document.getElementById('outputContainer').innerHTML = '';
@@ -63,8 +64,20 @@
             // Synthesize each paragraph sequentially
             for (let index = 0; index < paragraphs.length; index++) {
                 const paragraph = paragraphs[index];
-                const text = encodeURIComponent(paragraph);
-
+                let text = paragraph;				
+				let result = customVoice(text, speakerId, languageId);
+				
+				speakerId = result.speakerId;
+				languageId = result.languageId;
+				text = result.text;
+				
+				text = encodeURIComponent(text);
+				let str_speakerId = speakerId;
+				speakerId = encodeURIComponent( speakerId);
+				languageId = encodeURIComponent(languageId);
+				
+				console.log( result );
+				
                 try {
                     // Sending request to server
 
@@ -76,14 +89,50 @@
 
                     const blob = await response.blob();
                     audioBlobs.push(blob); // Store each blob
-                    displayAudio(index);
+                    displayAudio(index, str_speakerId);
                 } catch (error) {
                     console.error('Error:', error);
                 }
             }
         }
+       function customVoice(text, speakerId, languageId) {
+  			const pattern = /<([^>]+)>/;
+  			const match = text.match(pattern);
+			
+  			if (match) {
+    			const innerText = match[1];
+    			const speakerPattern = /v=(\d+)/;
+    			const languagePattern = /lan=(\w+)/;
+			
+    			const speakerMatch = innerText.match(speakerPattern);
+    			const languageMatch = innerText.match(languagePattern);
 
-        function displayAudio(index) {
+    			if (speakerMatch) {
+      			speakerId = namesArray[parseInt(speakerMatch[1])];
+    			}
+			
+    			if (languageMatch) {
+      			languageId = languageMatch[1];
+    			}
+			
+    			const modifiedText = text.replace(pattern, '').trim();
+			
+    			return {
+      			text: modifiedText,
+      			speakerId,
+      			languageId,
+    			};
+  			}
+			
+  			return {
+    			text,
+    			speakerId,
+    			languageId,
+  			};
+		}	
+		
+
+        function displayAudio(index, speakerId) {
             const audioElement = document.createElement('audio');
 			audioElement.id = `audio_${index}`;
             audioElement.number = index;
@@ -92,7 +141,7 @@
             // Display output
             const outputContainer = document.getElementById('outputContainer');
             const outputLabel = document.createElement('p');
-            outputLabel.textContent = `Output for Paragraph ${index + 1}:`;
+            outputLabel.textContent = `Output for Paragraph ${index + 1}: ${speakerId}`;
             outputContainer.appendChild(outputLabel);
             outputContainer.appendChild(audioElement);
             
