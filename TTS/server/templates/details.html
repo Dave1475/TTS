@@ -1,14 +1,12 @@
-
+<!-- written for docker coqui-ai index.html -->
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TTS Demo</title>
-</head>
-
-<body>
+  <body>
     <h1 id="demoTitle">TTS Demo</h1>
 
     <label for="inputText">Input Text (Multiple Paragraphs):</label>
@@ -16,87 +14,153 @@
 
     <label for="speaker_id">Speaker:</label>
     <select id="speaker_id"></select>
+    
+    <select id="language_id" name="language_id" method="GET" action="/">
+                    <option value="en" selected="en">en</option>"    
+                </select>
 
     <button onclick="synthesize()">Generate and Play</button>
-    <button onclick="mergeAudio()">Merge Audio</button>
 
     <div id="outputContainer"></div>
 
     <script>
-
-
-        function populateDropdown(namesArray) {
-        const dropdown = document.getElementById('speaker_id');
+      function populateDropdown(namesArray) {
+        const dropdown = document.getElementById("speaker_id");
 
         // Clear existing options
-        dropdown.innerHTML = '';
+        dropdown.innerHTML = "";
 
         // Add names from the array to the dropdown
         namesArray.forEach((name) => {
-            const option = document.createElement('option');
-            option.value = name;
-            option.text = name;
-            dropdown.add(option);
+          const option = document.createElement("option");
+          option.value = name;
+          option.text = name;
+          dropdown.add(option);
         });
-        }
+      }
 
-        // Example usage:
-        const namesArray = ['Claribel Dervla', 'Daisy Studious', 'Gracie Wise', 'Tammie Ema', 'Alison Dietlinde', 'Ana Florence', 'Annmarie Nele', 'Asya Anara', 'Brenda Stern', 'Gitta Nikolina', 'Henriette Usha', 'Sofia Hellen', 'Tammy Grit', 'Tanja Adelina', 'Vjollca Johnnie', 'Andrew Chipper', 'Badr Odhiambo', 'Dionisio Schuyler', 'Royston Min', 'Viktor Eka', 'Abrahan Mack', 'Adde Michal', 'Baldur Sanjin', 'Craig Gutsy', 'Damien Black', 'Gilberto Mathias', 'Ilkin Urbano', 'Kazuhiko Atallah', 'Ludvig Milivoj', 'Suad Qasim', 'Torcull Diarmuid', 'Viktor Menelaos', 'Zacharie Aimilios', 'Nova Hogarth', 'Maja Ruoho', 'Uta Obando', 'Lidiya Szekeres', 'Chandra MacFarland', 'Szofi Granger', 'Camilla Holmström', 'Lilya Stainthorpe', 'Zofija Kendrick', 'Narelle Moon', 'Barbora MacLean', 'Alexandra Hisakawa', 'Alma María', 'Rosemary Okafor', 'Ige Behringer', 'Filip Traverse', 'Damjan Chapman', 'Wulf Carlevaro', 'Aaron Dreschner', 'Kumar Dahl', 'Eugenio Mataracı', 'Ferran Simen', 'Xavier Hayasaka', 'Luis Moray', 'Marcos Rudaski'];
-        populateDropdown(namesArray);
+      // Example usage:
+      const namesArray = [
+        "Claribel Dervla",
+        "Daisy Studious",
+        "Gracie Wise",
+        "Tammie Ema",
+        "Alison Dietlinde",
+        "Ana Florence",
+        "Annmarie Nele",
+        "Asya Anara",
+        "Brenda Stern",
+        "Gitta Nikolina",
+        "Henriette Usha",
+        "Sofia Hellen",
+        "Tammy Grit",
+        "Tanja Adelina",
+        "Vjollca Johnnie",
+        "Andrew Chipper",
+        "Badr Odhiambo",
+        "Dionisio Schuyler",
+        "Royston Min",
+        "Viktor Eka",
+        "Abrahan Mack",
+        "Adde Michal",
+        "Baldur Sanjin",
+        "Craig Gutsy",
+        "Damien Black",
+        "Gilberto Mathias",
+        "Ilkin Urbano",
+        "Kazuhiko Atallah",
+        "Ludvig Milivoj",
+        "Suad Qasim",
+        "Torcull Diarmuid",
+        "Viktor Menelaos",
+        "Zacharie Aimilios",
+        "Nova Hogarth",
+        "Maja Ruoho",
+        "Uta Obando",
+        "Lidiya Szekeres",
+        "Chandra MacFarland",
+        "Szofi Granger",
+        "Camilla Holmström",
+        "Lilya Stainthorpe",
+        "Zofija Kendrick",
+        "Narelle Moon",
+        "Barbora MacLean",
+        "Alexandra Hisakawa",
+        "Alma María",
+        "Rosemary Okafor",
+        "Ige Behringer",
+        "Filip Traverse",
+        "Damjan Chapman",
+        "Wulf Carlevaro",
+        "Aaron Dreschner",
+        "Kumar Dahl",
+        "Eugenio Mataracı",
+        "Ferran Simen",
+        "Xavier Hayasaka",
+        "Luis Moray",
+        "Marcos Rudaski",
+      ];
+      populateDropdown(namesArray);
 
-        let audioBlobs = [];
-        var paragraphs = "";
+      
 
-         const serverAddress = window.location.origin; // Get the current server's address
-        async function synthesize() {
-            audioBlobs = []; // Clear previous audio blobs
-            const inputText = document.getElementById('inputText').value;
-            paragraphs = inputText.split(/\n\s*\n/).map(paragraph => paragraph.trim());
-            const speakerId = encodeURIComponent(document.getElementById('speaker_id').value);
-            const languageId = "en";
-            
-            document.getElementById("demoTitle").innerHTML = "There are " + paragraphs.length + " paragraphs";
+      function synthesize() {
 
-            // Clear previous output
-            document.getElementById('outputContainer').innerHTML = '';
+        console.log("synthesizing");
+        const downloadedIndices = [];
+        
+        const inputText = document.getElementById("inputText").value;
+        const paragraphs = inputText.split(/\n\s*\n/).map((paragraph) => paragraph.trim());
+        const speakerId = encodeURIComponent(document.getElementById("speaker_id").value);
+        const languageId = encodeURIComponent(document.getElementById("language_id").value);
+        const outputContainer = document.getElementById("outputContainer");
+        const serverAddress = window.location.origin; // Get the current server's address
+        //outputContainer.innerHTML = ""; // Clear previous output
 
-            // Synthesize each paragraph sequentially
-            for (let index = 0; index < paragraphs.length; index++) {
-                const paragraph = paragraphs[index];
-                const text = encodeURIComponent(paragraph);
-
-                try {
-                    // Sending request to server
-
-                    const response = await fetch(`${serverAddress}/api/tts?text=${text}&speaker_id=${speakerId}&language_id=${languageId}`);
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-
-                    const blob = await response.blob();
-                    audioBlobs.push(blob); // Store each blob
-                    displayAudio(index);
-                } catch (error) {
-                    console.error('Error:', error);
-                }
+        // Play audio files sequentially
+        function playSequentially(index) {
+          if (index < paragraphs.length) {
+            // Check if the audio for this index has been downloaded
+            if (downloadedIndices.includes(index)) {
+              // If already downloaded, play next without fetching again
+              playSequentially(index + 1);
+              return;
             }
-        }
 
-        function displayAudio(index) {
-            const audioElement = document.createElement('audio');
-			audioElement.id = `audio_${index}`;
+            // Mark this index as downloaded
+            downloadedIndices.push(index);
+            
+            const text = encodeURIComponent(paragraphs[index]);
+            const audioElement = document.createElement("audio");
+            audioElement.id = `audio_${index}`;
             audioElement.number = index;
             audioElement.controls = true;
 
-            // Display output
-            const outputContainer = document.getElementById('outputContainer');
-            const outputLabel = document.createElement('p');
-            outputLabel.textContent = `Output for Paragraph ${index + 1}:`;
-            outputContainer.appendChild(outputLabel);
-            outputContainer.appendChild(audioElement);
+            const paragraphElement = document.createElement("p");
+            paragraphElement.appendChild(audioElement); // Append the audio element
+            paragraphElement.appendChild(document.createTextNode(document.getElementById("speaker_id").value)); // Append the value of "speaker_id"
+
+            // Append the paragraph element to the outputContainer
+            outputContainer.appendChild(paragraphElement);
+            //outputContainer.appendChild(document.createElement("p").appendChild(audioElement));
             
-           audioElement.addEventListener("ended", function () {
+
+            // Increment index for the next iteration
+            const nextIndex = index + 1;
+
+            // Fetch next audio file in parallel
+            fetchNextAudio(nextIndex);
+
+            audioElement.addEventListener("play", function () {
+              console.log("Playback started for paragraph", index + 1);
+              // Play next file when the current one starts playing
+
+              document.getElementById("demoTitle").innerHTML = paragraphs[audioElement.number];
+
+              playSequentially(nextIndex);
+            });
+
+            audioElement.addEventListener("ended", function () {
               console.log("Playback ended for paragraph", index + 1);
 
               const audioToPlay = document.getElementById(`audio_${index + 1}`);
@@ -104,133 +168,47 @@
                 audioToPlay.play();
               }
             });
-            
-            audioElement.addEventListener("play", function () {
-              console.log("Playback started for paragraph", index + 1);
-              // Play next file when the current one starts playing
 
-              document.getElementById("demoTitle").innerHTML = paragraphs[audioElement.number];
-
-            });
-            
-
-            // Set source when file is loaded (autoplay disabled)
-            audioElement.src = URL.createObjectURL(audioBlobs[index]);
+            // Sending request to server languageId
+            fetch(`${serverAddress}/api/tts?text=${text}&speaker_id=${speakerId}&language_id=${languageId}`)
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.blob();
+              })
+              .then((blob) => {
+                // Set source when file is loaded (autoplay disabled)
+                audioElement.src = URL.createObjectURL(blob);
+                //audioElement.play();
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              });
+          }
         }
 
-        function mergeAudio() {
-            const sampleRate = 22050;
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
-            audioContext.sampleRate = 22050;
-            const audioBuffers = [];
+        // Fetch audio for the next index in parallel
+        function fetchNextAudio(nextIndex) {
+          if (nextIndex < paragraphs.length) {
+            const nextText = encodeURIComponent(paragraphs[nextIndex]);
 
-            // Decode each blob and store in audioBuffers
-            Promise.all(audioBlobs.map(blob =>
-                blob.arrayBuffer().then(buffer => audioContext.decodeAudioData(buffer))
-            ))
-                .then(buffers => {
-                    audioBuffers.push(...buffers);
-
-                    console.log( audioBuffers[0].numberOfChannels );
-                    // Concatenate audio buffers
-                    const mergedBuffer = audioContext.createBuffer(
-                        audioBuffers[0].numberOfChannels,
-                        audioBuffers.reduce((total, buffer) => total + buffer.length, 0),
-                        audioBuffers[0].sampleRate
-                    );
-
-                    let offset = 0;
-                    audioBuffers.forEach(buffer => {
-                        mergedBuffer.getChannelData(0).set(buffer.getChannelData(0), offset);
-                        //mergedBuffer.getChannelData(1).set(buffer.getChannelData(1), offset);
-                        offset += buffer.length;
-                    });
-
-                    // Create a WAV file from the concatenated buffer
-                    const wavBlob = new Blob([createWavFile(mergedBuffer)], { type: 'audio/wav' });
-
-                    // Create a download link
-                    // const downloadLink = document.createElement('a');
-                    // downloadLink.href = URL.createObjectURL(wavBlob);
-                    // downloadLink.download = 'merged_audio.wav';
-                    // downloadLink.click();
-
-                    // Append audio element for merged file
-                    const mergedAudioElement = document.createElement('audio');
-                    mergedAudioElement.controls = true;
-                    mergedAudioElement.src = URL.createObjectURL(wavBlob);
-
-                    // Display merged audio
-                    const outputContainer = document.getElementById('outputContainer');
-                    const mergedAudioLabel = document.createElement('p');
-                    mergedAudioLabel.textContent = 'Merged Audio:';
-                    outputContainer.appendChild(mergedAudioLabel);
-                    outputContainer.appendChild(mergedAudioElement);
-
-
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
+            fetch(`${serverAddress}/api/tts?text=${nextText}&speaker_id=${speakerId}&language_id=${languageId}`)
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.blob();
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              });
+          }
         }
 
-        function createWavFile(audioBuffer) {
-            // Use only the first channel directly
-            const monoChannelData = audioBuffer.getChannelData(0);
-
-            const wavBuffer = new ArrayBuffer(44 + monoChannelData.length * 2);
-            const view = new DataView(wavBuffer);
-
-            // RIFF header
-            writeString(view, 0, 'RIFF');
-            view.setUint32(4, 36 + monoChannelData.length * 2, true); // Adjust for single channel
-            writeString(view, 8, 'WAVE');
-
-            // FMT subchunk
-            writeString(view, 12, 'fmt ');
-            view.setUint32(16, 16, true);
-            view.setUint16(20, 1, true); // Audio format (PCM)
-            view.setUint16(22, 1, true); // Number of channels (1 for mono)
-            view.setUint32(24, 22050, true); // Sample rate
-            view.setUint32(28, 22050 * 2, true); // Byte rate (sample rate * bytes per sample)
-            view.setUint16(32, 2, true); // Block align (bytes per sample)
-            view.setUint16(34, 16, true); // Bits per sample
-
-            // Data subchunk
-            writeString(view, 36, 'data');
-            view.setUint32(40, monoChannelData.length * 2, true); // Adjust for single channel
-
-            // Write PCM samples as 16-bit integers
-            for (let i = 0; i < monoChannelData.length; i++) {
-                view.setInt16(44 + i * 2, monoChannelData[i] * 0x7FFF, true);
-            }
-
-            return wavBuffer;
-        }
-
-
-
-        function interleave(leftChannel, rightChannel) {
-            const length = leftChannel.length + rightChannel.length;
-            const result = new Float32Array(length);
-
-            let inputIndex = 0;
-
-            for (let index = 0; index < length;) {
-                result[index++] = leftChannel[inputIndex];
-                result[index++] = rightChannel[inputIndex];
-                inputIndex++;
-            }
-
-            return result;
-        }
-
-        function writeString(view, offset, string) {
-            for (let i = 0; i < string.length; i++) {
-                view.setUint8(offset + i, string.charCodeAt(i));
-            }
-        }
+        // Start playing sequentially from the first paragraph
+        playSequentially(0);
+      }
     </script>
-</body>
-
+  </body>
 </html>
