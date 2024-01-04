@@ -180,6 +180,7 @@ class Synthesizer(nn.Module):
             use_cuda (bool): enable/disable CUDA use.
         """
         # pylint: disable=global-statement
+        tts_config_path="/usr/local/lib/python3.10/dist-packages/TTS/config.json"
         self.tts_config = load_config(tts_config_path)
         if self.tts_config["use_phonemes"] and self.tts_config["phonemizer"] is None:
             raise ValueError("Phonemizer is not defined in the TTS config.")
