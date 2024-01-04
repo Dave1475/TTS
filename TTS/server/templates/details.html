@@ -1,131 +1,236 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="">
-  <meta name="author" content="">
-
-  <title>TTS engine</title>
-
-  <!-- Bootstrap core CSS -->
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
-    integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous"
-    rel="stylesheet">
-
-  <!-- Custom styles for this template -->
-  <style>
-    body {
-      padding-top: 54px;
-    }
-
-    @media (min-width: 992px) {
-      body {
-        padding-top: 56px;
-      }
-    }
-  </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TTS Demo</title>
 </head>
 
 <body>
-  <a href="https://github.com/mozilla/TTS"><img style="position: absolute; z-index:1000; top: 0; left: 0; border: 0;"
-      src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png" alt="Fork me on GitHub"></a>
+    <h1 id="demoTitle">TTS Demo</h1>
 
-  {% if show_details == true %}
+    <label for="inputText">Input Text (Multiple Paragraphs):</label>
+    <textarea id="inputText" placeholder="Type here..." rows="4" cols="50"></textarea>
 
-  <div class="container">
-    <b>Model details</b>
-  </div>
+    <label for="speaker_id">Speaker:</label>
+    <select id="speaker_id"></select>
 
-  <div class="container">
-    <details>
-      <summary>CLI arguments:</summary>
-      <table border="1" align="center" width="75%">
-        <tr>
-          <td> CLI key </td>
-          <td> Value </td>
-        </tr>
+    <button onclick="synthesize()">Generate and Play</button>
+    <button onclick="mergeAudio()">Merge Audio</button>
 
-        {% for key, value in args.items() %}
+    <div id="outputContainer"></div>
 
-        <tr>
-          <td>{{ key }}</td>
-          <td>{{ value }}</td>
-        </tr>
-
-        {% endfor %}
-      </table>
-    </details>
-  </div></br>
-
-  <div class="container">
-
-    {% if model_config != None %}
-
-    <details>
-      <summary>Model config:</summary>
-
-      <table border="1" align="center" width="75%">
-        <tr>
-          <td> Key </td>
-          <td> Value </td>
-        </tr>
+    <script>
 
 
-        {% for key, value in model_config.items() %}
+        function populateDropdown(namesArray) {
+        const dropdown = document.getElementById('speaker_id');
 
-        <tr>
-          <td>{{ key }}</td>
-          <td>{{ value }}</td>
-        </tr>
+        // Clear existing options
+        dropdown.innerHTML = '';
 
-        {% endfor %}
+        // Add names from the array to the dropdown
+        namesArray.forEach((name) => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.text = name;
+            dropdown.add(option);
+        });
+        }
 
-      </table>
-    </details>
+        // Example usage:
+        const namesArray = ['Claribel Dervla', 'Daisy Studious', 'Gracie Wise', 'Tammie Ema', 'Alison Dietlinde', 'Ana Florence', 'Annmarie Nele', 'Asya Anara', 'Brenda Stern', 'Gitta Nikolina', 'Henriette Usha', 'Sofia Hellen', 'Tammy Grit', 'Tanja Adelina', 'Vjollca Johnnie', 'Andrew Chipper', 'Badr Odhiambo', 'Dionisio Schuyler', 'Royston Min', 'Viktor Eka', 'Abrahan Mack', 'Adde Michal', 'Baldur Sanjin', 'Craig Gutsy', 'Damien Black', 'Gilberto Mathias', 'Ilkin Urbano', 'Kazuhiko Atallah', 'Ludvig Milivoj', 'Suad Qasim', 'Torcull Diarmuid', 'Viktor Menelaos', 'Zacharie Aimilios', 'Nova Hogarth', 'Maja Ruoho', 'Uta Obando', 'Lidiya Szekeres', 'Chandra MacFarland', 'Szofi Granger', 'Camilla Holmström', 'Lilya Stainthorpe', 'Zofija Kendrick', 'Narelle Moon', 'Barbora MacLean', 'Alexandra Hisakawa', 'Alma María', 'Rosemary Okafor', 'Ige Behringer', 'Filip Traverse', 'Damjan Chapman', 'Wulf Carlevaro', 'Aaron Dreschner', 'Kumar Dahl', 'Eugenio Mataracı', 'Ferran Simen', 'Xavier Hayasaka', 'Luis Moray', 'Marcos Rudaski'];
+        populateDropdown(namesArray);
 
-    {% endif %}
+        let audioBlobs = [];
+        var paragraphs = "";
 
-  </div></br>
+         const serverAddress = window.location.origin; // Get the current server's address
+        async function synthesize() {
+            audioBlobs = []; // Clear previous audio blobs
+            const inputText = document.getElementById('inputText').value;
+            paragraphs = inputText.split(/\n\s*\n/).map(paragraph => paragraph.trim());
+            const speakerId = encodeURIComponent(document.getElementById('speaker_id').value);
+            const languageId = "en";
+            
+            document.getElementById("demoTitle").innerHTML = "There are " + paragraphs.length + " paragraphs";
+
+            // Clear previous output
+            document.getElementById('outputContainer').innerHTML = '';
+
+            // Synthesize each paragraph sequentially
+            for (let index = 0; index < paragraphs.length; index++) {
+                const paragraph = paragraphs[index];
+                const text = encodeURIComponent(paragraph);
+
+                try {
+                    // Sending request to server
+
+                    const response = await fetch(`${serverAddress}/api/tts?text=${text}&speaker_id=${speakerId}&language_id=${languageId}`);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    const blob = await response.blob();
+                    audioBlobs.push(blob); // Store each blob
+                    displayAudio(index);
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+        }
+
+        function displayAudio(index) {
+            const audioElement = document.createElement('audio');
+			audioElement.id = `audio_${index}`;
+            audioElement.number = index;
+            audioElement.controls = true;
+
+            // Display output
+            const outputContainer = document.getElementById('outputContainer');
+            const outputLabel = document.createElement('p');
+            outputLabel.textContent = `Output for Paragraph ${index + 1}:`;
+            outputContainer.appendChild(outputLabel);
+            outputContainer.appendChild(audioElement);
+            
+           audioElement.addEventListener("ended", function () {
+              console.log("Playback ended for paragraph", index + 1);
+
+              const audioToPlay = document.getElementById(`audio_${index + 1}`);
+              if (audioToPlay) {
+                audioToPlay.play();
+              }
+            });
+            
+            audioElement.addEventListener("play", function () {
+              console.log("Playback started for paragraph", index + 1);
+              // Play next file when the current one starts playing
+
+              document.getElementById("demoTitle").innerHTML = paragraphs[audioElement.number];
+
+            });
+            
+
+            // Set source when file is loaded (autoplay disabled)
+            audioElement.src = URL.createObjectURL(audioBlobs[index]);
+        }
+
+        function mergeAudio() {
+            const sampleRate = 22050;
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
+            audioContext.sampleRate = 22050;
+            const audioBuffers = [];
+
+            // Decode each blob and store in audioBuffers
+            Promise.all(audioBlobs.map(blob =>
+                blob.arrayBuffer().then(buffer => audioContext.decodeAudioData(buffer))
+            ))
+                .then(buffers => {
+                    audioBuffers.push(...buffers);
+
+                    console.log( audioBuffers[0].numberOfChannels );
+                    // Concatenate audio buffers
+                    const mergedBuffer = audioContext.createBuffer(
+                        audioBuffers[0].numberOfChannels,
+                        audioBuffers.reduce((total, buffer) => total + buffer.length, 0),
+                        audioBuffers[0].sampleRate
+                    );
+
+                    let offset = 0;
+                    audioBuffers.forEach(buffer => {
+                        mergedBuffer.getChannelData(0).set(buffer.getChannelData(0), offset);
+                        //mergedBuffer.getChannelData(1).set(buffer.getChannelData(1), offset);
+                        offset += buffer.length;
+                    });
+
+                    // Create a WAV file from the concatenated buffer
+                    const wavBlob = new Blob([createWavFile(mergedBuffer)], { type: 'audio/wav' });
+
+                    // Create a download link
+                    // const downloadLink = document.createElement('a');
+                    // downloadLink.href = URL.createObjectURL(wavBlob);
+                    // downloadLink.download = 'merged_audio.wav';
+                    // downloadLink.click();
+
+                    // Append audio element for merged file
+                    const mergedAudioElement = document.createElement('audio');
+                    mergedAudioElement.controls = true;
+                    mergedAudioElement.src = URL.createObjectURL(wavBlob);
+
+                    // Display merged audio
+                    const outputContainer = document.getElementById('outputContainer');
+                    const mergedAudioLabel = document.createElement('p');
+                    mergedAudioLabel.textContent = 'Merged Audio:';
+                    outputContainer.appendChild(mergedAudioLabel);
+                    outputContainer.appendChild(mergedAudioElement);
+
+
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function createWavFile(audioBuffer) {
+            // Use only the first channel directly
+            const monoChannelData = audioBuffer.getChannelData(0);
+
+            const wavBuffer = new ArrayBuffer(44 + monoChannelData.length * 2);
+            const view = new DataView(wavBuffer);
+
+            // RIFF header
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + monoChannelData.length * 2, true); // Adjust for single channel
+            writeString(view, 8, 'WAVE');
+
+            // FMT subchunk
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); // Audio format (PCM)
+            view.setUint16(22, 1, true); // Number of channels (1 for mono)
+            view.setUint32(24, 22050, true); // Sample rate
+            view.setUint32(28, 22050 * 2, true); // Byte rate (sample rate * bytes per sample)
+            view.setUint16(32, 2, true); // Block align (bytes per sample)
+            view.setUint16(34, 16, true); // Bits per sample
+
+            // Data subchunk
+            writeString(view, 36, 'data');
+            view.setUint32(40, monoChannelData.length * 2, true); // Adjust for single channel
+
+            // Write PCM samples as 16-bit integers
+            for (let i = 0; i < monoChannelData.length; i++) {
+                view.setInt16(44 + i * 2, monoChannelData[i] * 0x7FFF, true);
+            }
+
+            return wavBuffer;
+        }
 
 
 
-  <div class="container">
-    {% if vocoder_config != None %}
-    <details>
-      <summary>Vocoder model config:</summary>
+        function interleave(leftChannel, rightChannel) {
+            const length = leftChannel.length + rightChannel.length;
+            const result = new Float32Array(length);
 
-      <table border="1" align="center" width="75%">
-        <tr>
-          <td> Key </td>
-          <td> Value </td>
-        </tr>
+            let inputIndex = 0;
 
+            for (let index = 0; index < length;) {
+                result[index++] = leftChannel[inputIndex];
+                result[index++] = rightChannel[inputIndex];
+                inputIndex++;
+            }
 
-        {% for key, value in vocoder_config.items() %}
+            return result;
+        }
 
-        <tr>
-          <td>{{ key }}</td>
-          <td>{{ value }}</td>
-        </tr>
-
-        {% endfor %}
-
-
-      </table>
-    </details>
-    {% endif %}
-  </div></br>
-
-  {% else %}
-  <div class="container">
-    <b>Please start server with --show_details=true to see details.</b>
-  </div>
-
-  {% endif %}
-
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+    </script>
 </body>
 
 </html>
