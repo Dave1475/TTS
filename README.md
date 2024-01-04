@@ -1,3 +1,6 @@
+## Google Colab
+[Colab Notebook](https://colab.research.google.com/drive/1M6WSayNX2O4Vz3hN7yXAm0TnPbU9G1cO#scrollTo=-I30GgL-5RJU)
+
 
 ## 🐸Coqui.ai News
 - 📣 ⓍTTSv2 is here with 16 languages and better performance across the board.
