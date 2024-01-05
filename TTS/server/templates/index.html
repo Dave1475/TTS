@@ -66,19 +66,19 @@
                 const paragraph = paragraphs[index];
                 let text = paragraph;
                 let speakerId = _speakerId;
-				let result = customVoice(text, speakerId, languageId);
-				
-				speakerId = result.speakerId;
-				languageId = result.languageId;
-				text = result.text;
-				
-				text = encodeURIComponent(text);
-				let str_speakerId = speakerId;
-				speakerId = encodeURIComponent( speakerId);
-				languageId = encodeURIComponent(languageId);
-				
-				console.log( result );
-				
+		let result = customVoice(text, speakerId, languageId);
+		
+		speakerId = result.speakerId;
+		languageId = result.languageId;
+		text = result.text;
+		
+		text = encodeURIComponent(text);
+		let str_speakerId = speakerId;
+		speakerId = encodeURIComponent( speakerId);
+		languageId = encodeURIComponent(languageId);
+		
+		console.log( result );
+		
                 try {
                     // Sending request to server
 
