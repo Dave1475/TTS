@@ -17,17 +17,19 @@
     <label for="speaker_id">Speaker:</label>
     <select id="speaker_id"></select>
 
-    <button onclick="synthesize()">Generate and Play</button>
+    <button onclick="synthesize()">Generate</button>
     <button onclick="mergeAudio()">Merge Audio</button>
+	<button onclick="playPause()">play / pause</button>
 
     <div id="outputContainer"></div>
 
     <script>
 
 
+		var currentIndex = 0;
+		
         function populateDropdown(namesArray) {
         const dropdown = document.getElementById('speaker_id');
-
         // Clear existing options
         dropdown.innerHTML = '';
 
@@ -66,19 +68,19 @@
                 const paragraph = paragraphs[index];
                 let text = paragraph;
                 let speakerId = _speakerId;
-		let result = customVoice(text, speakerId, languageId);
-		
-		speakerId = result.speakerId;
-		languageId = result.languageId;
-		text = result.text;
-		
-		text = encodeURIComponent(text);
-		let str_speakerId = speakerId;
-		speakerId = encodeURIComponent( speakerId);
-		languageId = encodeURIComponent(languageId);
-		
-		console.log( result );
-		
+				let result = customVoice(text, speakerId, languageId);
+				
+				speakerId = result.speakerId;
+				languageId = result.languageId;
+				text = result.text;
+				
+				text = encodeURIComponent(text);
+				let str_speakerId = speakerId;
+				speakerId = encodeURIComponent( speakerId);
+				languageId = encodeURIComponent(languageId);
+				
+				console.log( result );
+				
                 try {
                     // Sending request to server
 
@@ -158,6 +160,7 @@
             audioElement.addEventListener("play", function () {
               console.log("Playback started for paragraph", index + 1);
               // Play next file when the current one starts playing
+              currentIndex = audioElement.number;
 
               document.getElementById("demoTitle").innerHTML = paragraphs[audioElement.number];
 
@@ -167,7 +170,20 @@
             // Set source when file is loaded (autoplay disabled)
             audioElement.src = URL.createObjectURL(audioBlobs[index]);
         }
-
+        
+        function playPause(){
+        	var myAudio = document.getElementById( `audio_${currentIndex}` );
+			togglePlayPause(myAudio);
+        }
+        
+        function togglePlayPause(audioElement) {
+  		if (audioElement.paused) {
+    		audioElement.play();
+  		} else {
+    		audioElement.pause();
+  		}
+		}
+		
         function mergeAudio() {
             const sampleRate = 22050;
             const audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
