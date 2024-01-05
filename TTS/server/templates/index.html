@@ -52,7 +52,7 @@
             audioBlobs = []; // Clear previous audio blobs
             const inputText = document.getElementById('inputText').value;
             paragraphs = inputText.split(/\n\s*\n/).map(paragraph => paragraph.trim());
-            let speakerId = document.getElementById('speaker_id').value;
+            const _speakerId = document.getElementById('speaker_id').value;
             let languageId = "en";
             
             document.getElementById("demoTitle").innerHTML = "There are " + paragraphs.length + " paragraphs";
@@ -66,7 +66,7 @@
                 const paragraph = paragraphs[index];
                 let text = paragraph;				
 				let result = customVoice(text, speakerId, languageId);
-				
+				let speakerId = _speakerId;
 				speakerId = result.speakerId;
 				languageId = result.languageId;
 				text = result.text;
