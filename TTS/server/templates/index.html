@@ -64,9 +64,10 @@
             // Synthesize each paragraph sequentially
             for (let index = 0; index < paragraphs.length; index++) {
                 const paragraph = paragraphs[index];
-                let text = paragraph;				
+                let text = paragraph;
+                let speakerId = _speakerId;
 				let result = customVoice(text, speakerId, languageId);
-				let speakerId = _speakerId;
+				
 				speakerId = result.speakerId;
 				languageId = result.languageId;
 				text = result.text;
