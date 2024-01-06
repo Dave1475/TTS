@@ -154,6 +154,7 @@
 				speakerId = result.speakerId;
 				languageId = result.languageId;
 				text = result.text;
+				paragraphs[data.index] = text;
 				
 				text = encodeURIComponent(text);
 				let str_speakerId = speakerId;
@@ -176,6 +177,7 @@
                     
                     audioBlobs.splice(data.blobIndex, 0, blob);
                     audioElement.src = URL.createObjectURL(audioBlobs[data.blobIndex]); 
+                    
                     
                     //audioBlobs.push(blob); // Store each blob
                     //displayAudio(index, str_speakerId, audioBlobs.length - 1, false, data);
